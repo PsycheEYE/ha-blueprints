@@ -118,7 +118,8 @@ actions:
                 state: ["!input away_state"]
         sequence:
           - action: cover.open_cover
-            entity_id: !input window_cover
+            target:
+              entity_id: !input window_cover
 
       # 2) CO2 low → close window
       - conditions:
@@ -129,7 +130,8 @@ actions:
             state: "open"
         sequence:
           - action: cover.close_cover
-            entity_id: !input window_cover
+            target:
+              entity_id: !input window_cover
 
       # 3) Sensor unavailable → close window for safety
       - conditions:
@@ -140,7 +142,8 @@ actions:
             state: "open"
         sequence:
           - action: cover.close_cover
-            entity_id: !input window_cover
+            target:
+              entity_id: !input window_cover
 
       # 4) Forced ventilation timer started → open window
       - conditions:
@@ -148,7 +151,8 @@ actions:
             id: ["timer_started"]
         sequence:
           - action: cover.open_cover
-            entity_id: !input window_cover
+            target:
+              entity_id: !input window_cover
 
       # 5) Forced ventilation timer expired → close window
       - conditions:
@@ -159,7 +163,8 @@ actions:
             state: "open"
         sequence:
           - action: cover.close_cover
-            entity_id: !input window_cover
+            target:
+              entity_id: !input window_cover
 
       # 6) Manual window close → cancel timer if running
       - conditions:
@@ -172,4 +177,5 @@ actions:
                 state: "idle"
         sequence:
           - action: timer.cancel
-            entity_id: !input timer_entity
+            target:
+              entity_id: !input timer_entity
