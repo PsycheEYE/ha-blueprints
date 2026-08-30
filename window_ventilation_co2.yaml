@@ -58,6 +58,16 @@ triggers:
     entity_id: !input co2_sensor
     to: "unavailable"
     for: !input trigger_delay
+  - id: timer_started
+    trigger: timer.started
+    entity_id: timer.forced_ventilation_timeout
+  - id: timer_expired
+    trigger: timer.finished
+    entity_id: timer.forced_ventilation_timeout
+  - id: window_closed
+    trigger: state
+    entity_id: cover.bedroom_window_opener
+    to: "closed"
 
 actions:
   - choose:
@@ -89,3 +99,32 @@ actions:
           - action: cover.close_cover
             target:
               entity_id: cover.bedroom_window_opener
+
+      - conditions:
+          - condition: trigger
+            id: ["timer_started"]
+        sequence:
+          - action: cover.open_cover
+            target:
+              entity_id: cover.bedroom_window_opener
+
+      - conditions:
+          - condition: trigger
+            id: ["timer_expired"]
+        sequence:
+          - action: cover.close_cover
+            target:
+              entity_id: cover.bedroom_window_opener
+
+      - conditions:
+          - condition: trigger
+            id: ["window_closed"]
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: timer.forced_ventilation_timeout
+                state: "idle"
+        sequence:
+          - action: timer.cancel
+            target:
+              entity_id: timer.forced_ventilation_timeout
