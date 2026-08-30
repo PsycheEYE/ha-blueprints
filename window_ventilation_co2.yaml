@@ -93,10 +93,10 @@ triggers:
     for: !input trigger_delay
   - id: timer_started
     trigger: timer.started
-    target: !input timer_entity
+    entity_id: !input timer_entity
   - id: timer_expired
     trigger: timer.finished
-    target: !input timer_entity
+    entity_id: !input timer_entity
   - id: window_closed
     trigger: state
     entity_id: !input window_cover
