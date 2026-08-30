@@ -3,6 +3,7 @@ blueprint:
   description: >-
     Automatically open/close a window based on CO2 levels.
     Includes forced ventilation via timer and home-mode safety check.
+    Edit the entity_ids below after importing.
   domain: automation
   homeassistant:
     min_version: "2024.10.0"
@@ -13,12 +14,6 @@ blueprint:
         entity:
           domain: sensor
           device_class: carbon_dioxide
-    window_cover:
-      name: Window cover entity_id
-      description: "Enter the cover entity_id, e.g. cover.living_room_window"
-      default: "cover.living_room_window_opener"
-      selector:
-        text: {}
     open_threshold:
       name: Open window above (ppm)
       default: 800
@@ -34,11 +29,6 @@ blueprint:
       default: "00:01:00"
       selector:
         duration: {}
-    timer_entity:
-      name: Timer entity
-      selector:
-        entity:
-          domain: timer
     away_sensor:
       name: Away mode sensor
       selector:
@@ -51,9 +41,6 @@ blueprint:
         text: {}
 
 mode: restart
-
-variables:
-  window: !input window_cover
 
 triggers:
   - id: open
@@ -71,25 +58,12 @@ triggers:
     entity_id: !input co2_sensor
     to: "unavailable"
     for: !input trigger_delay
-  - id: timer_started
-    trigger: timer.started
-    entity_id: !input timer_entity
-  - id: timer_expired
-    trigger: timer.finished
-    entity_id: !input timer_entity
-  - id: window_closed
-    trigger: state
-    entity_id: !input window_cover
-    to: "closed"
 
 actions:
   - choose:
       - conditions:
           - condition: trigger
             id: ["open"]
-          - condition: state
-            entity_id: !input timer_entity
-            state: "idle"
           - condition: not
             conditions:
               - condition: state
@@ -98,58 +72,20 @@ actions:
         sequence:
           - action: cover.open_cover
             target:
-              entity_id: "{{ window }}"
+              entity_id: cover.living_room_window_opener
 
       - conditions:
           - condition: trigger
             id: ["close"]
-          - condition: state
-            entity_id: !input window_cover
-            state: "open"
         sequence:
           - action: cover.close_cover
             target:
-              entity_id: "{{ window }}"
+              entity_id: cover.living_room_window_opener
 
       - conditions:
           - condition: trigger
             id: ["unavailable"]
-          - condition: state
-            entity_id: !input window_cover
-            state: "open"
         sequence:
           - action: cover.close_cover
             target:
-              entity_id: "{{ window }}"
-
-      - conditions:
-          - condition: trigger
-            id: ["timer_started"]
-        sequence:
-          - action: cover.open_cover
-            target:
-              entity_id: "{{ window }}"
-
-      - conditions:
-          - condition: trigger
-            id: ["timer_expired"]
-          - condition: state
-            entity_id: !input window_cover
-            state: "open"
-        sequence:
-          - action: cover.close_cover
-            target:
-              entity_id: "{{ window }}"
-
-      - conditions:
-          - condition: trigger
-            id: ["window_closed"]
-          - condition: not
-            conditions:
-              - condition: state
-                entity_id: !input timer_entity
-                state: "idle"
-        sequence:
-          - action: timer.cancel
-            target:
-              entity_id: !input timer_entity
+              entity_id: cover.living_room_window_opener
