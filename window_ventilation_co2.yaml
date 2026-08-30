@@ -126,7 +126,7 @@ actions:
           - condition: trigger
             id: ["close"]
           - condition: state
-            entity_id: !input window_cover
+            entity_id: !input window_cover.entity_id
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -137,7 +137,7 @@ actions:
           - condition: trigger
             id: ["unavailable"]
           - condition: state
-            entity_id: !input window_cover
+            entity_id: !input window_cover.entity_id
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -156,7 +156,7 @@ actions:
           - condition: trigger
             id: ["timer_expired"]
           - condition: state
-            entity_id: !input window_cover
+            entity_id: !input window_cover.entity_id
             state: "open"
         sequence:
           - action: cover.close_cover
