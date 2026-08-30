@@ -118,9 +118,11 @@ actions:
           - condition: state
             entity_id: !input timer_entity
             state: "idle"
-          - condition: state
-            entity_id: !input away_sensor
-            not_state: ["!input away_state"]
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: !input away_sensor
+                state: ["!input away_state"]
         sequence:
           - action: cover.open_cover
             target: !input window_cover
