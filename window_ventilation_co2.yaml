@@ -4,6 +4,7 @@ blueprint:
     Automatically open/close a window based on CO2 levels.
     Includes forced ventilation via timer and home-mode safety check.
   domain: automation
+  source_url: "https://github.com/psalomatov/ha-blueprints/blob/main/co2_window_ventilation.yaml"
   homeassistant:
     min_version: "2024.10.0"
   input:
@@ -66,11 +67,18 @@ blueprint:
       icon: mdi:shield-check
       collapsed: true
       input:
-        is_away:
-          name: Is away
-          description: When ON, the window will not open automatically.
+        away_sensor:
+          name: Away mode sensor
+          description: Entity that indicates if anyone is home.
           selector:
-            boolean: {}
+            entity:
+              domain: [input_select, binary_sensor, input_boolean]
+        away_state:
+          name: Away state value
+          description: The state that means "away" (for input_select/binary_sensor).
+          default: "on"
+          selector:
+            text: {}
 
 mode: restart
 
@@ -111,8 +119,8 @@ actions:
             entity_id: !input timer_entity
             state: "idle"
           - condition: state
-            entity_id: !input is_away
-            state: "off"
+            entity_id: !input away_sensor
+            not_state: ["!input away_state"]
         sequence:
           - action: cover.open_cover
             target: !input window_cover
