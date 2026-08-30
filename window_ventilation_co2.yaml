@@ -56,12 +56,6 @@ blueprint:
           selector:
             entity:
               domain: timer
-        timer_duration:
-          name: Forced ventilation duration
-          description: How long to keep window open during forced ventilation.
-          default: "00:30:00"
-          selector:
-            duration: {}
     safety:
       name: Safety
       icon: mdi:shield-check
