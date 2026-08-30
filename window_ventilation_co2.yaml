@@ -177,4 +177,5 @@ actions:
                 state: "idle"
         sequence:
           - action: timer.cancel
-            target: !input timer_entity
+            data:
+              entity_id: !input timer_entity
