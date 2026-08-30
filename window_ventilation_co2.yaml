@@ -75,6 +75,9 @@ blueprint:
 
 mode: restart
 
+variables:
+  window_cover_id: !input window_cover
+
 triggers:
   - id: open
     trigger: numeric_state
@@ -125,7 +128,7 @@ actions:
           - condition: trigger
             id: ["close"]
           - condition: state
-            entity_id: !input window_cover
+            entity_id: "{{ window_cover_id }}"
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -136,7 +139,7 @@ actions:
           - condition: trigger
             id: ["unavailable"]
           - condition: state
-            entity_id: !input window_cover
+            entity_id: "{{ window_cover_id }}"
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -155,7 +158,7 @@ actions:
           - condition: trigger
             id: ["timer_expired"]
           - condition: state
-            entity_id: !input window_cover
+            entity_id: "{{ window_cover_id }}"
             state: "open"
         sequence:
           - action: cover.close_cover
