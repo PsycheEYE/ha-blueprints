@@ -103,7 +103,7 @@ triggers:
     target: !input timer_entity
   - id: window_closed
     trigger: state
-    entity_id: "{{ window_cover_id }}"
+    entity_id: "{{ window_cover_id.entity_id }}"
     to: "closed"
 
 actions:
@@ -129,7 +129,7 @@ actions:
           - condition: trigger
             id: ["close"]
           - condition: state
-            entity_id: "{{ window_cover_id }}"
+            entity_id: "{{ window_cover_id.entity_id }}"
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -140,7 +140,7 @@ actions:
           - condition: trigger
             id: ["unavailable"]
           - condition: state
-            entity_id: "{{ window_cover_id }}"
+            entity_id: "{{ window_cover_id.entity_id }}"
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -159,7 +159,7 @@ actions:
           - condition: trigger
             id: ["timer_expired"]
           - condition: state
-            entity_id: "{{ window_cover_id }}"
+            entity_id: "{{ window_cover_id.entity_id }}"
             state: "open"
         sequence:
           - action: cover.close_cover
