@@ -21,9 +21,8 @@ blueprint:
         window_cover:
           name: Window cover
           selector:
-            target:
-              entity:
-                domain: cover
+            entity:
+              domain: cover
     thresholds:
       name: CO2 Thresholds
       icon: mdi:thermometer-lines
@@ -126,7 +125,7 @@ actions:
           - condition: trigger
             id: ["close"]
           - condition: state
-            entity_id: !input window_cover.entity_id
+            entity_id: !input window_cover
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -137,7 +136,7 @@ actions:
           - condition: trigger
             id: ["unavailable"]
           - condition: state
-            entity_id: !input window_cover.entity_id
+            entity_id: !input window_cover
             state: "open"
         sequence:
           - action: cover.close_cover
@@ -156,7 +155,7 @@ actions:
           - condition: trigger
             id: ["timer_expired"]
           - condition: state
-            entity_id: !input window_cover.entity_id
+            entity_id: !input window_cover
             state: "open"
         sequence:
           - action: cover.close_cover
