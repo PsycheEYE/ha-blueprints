@@ -1,0 +1,172 @@
+blueprint:
+  name: CO2-Based Window Ventilation
+  description: >-
+    Automatically open/close a window based on CO2 levels.
+    Includes forced ventilation via timer and home-mode safety check.
+  domain: automation
+  homeassistant:
+    min_version: "2024.10.0"
+  input:
+    sensors:
+      name: Sensors & Devices
+      icon: mdi:air-filter
+      input:
+        co2_sensor:
+          name: CO2 sensor
+          selector:
+            entity:
+              domain: sensor
+              device_class: carbon_dioxide
+        window_cover:
+          name: Window cover
+          selector:
+            target:
+              entity:
+                domain: cover
+    thresholds:
+      name: CO2 Thresholds
+      icon: mdi:thermometer-lines
+      input:
+        open_threshold:
+          name: Open window above (ppm)
+          description: Window opens when CO2 exceeds this value.
+          default: 800
+          selector:
+            number: { min: 400, max: 2000, step: 50, unit_of_measurement: "ppm", mode: slider }
+        close_threshold:
+          name: Close window below (ppm)
+          description: Window closes when CO2 drops below this value.
+          default: 550
+          selector:
+            number: { min: 300, max: 1500, step: 50, unit_of_measurement: "ppm", mode: slider }
+        trigger_delay:
+          name: Trigger delay
+          description: How long CO2 must be above/below threshold before acting.
+          default: "00:01:00"
+          selector:
+            duration: {}
+    timer:
+      name: Forced Ventilation Timer
+      icon: mdi:timer-outline
+      collapsed: true
+      input:
+        timer_entity:
+          name: Timer entity
+          selector:
+            entity:
+              domain: timer
+        timer_duration:
+          name: Forced ventilation duration
+          description: How long to keep window open during forced ventilation.
+          default: "00:30:00"
+          selector:
+            duration: {}
+    safety:
+      name: Safety
+      icon: mdi:shield-check
+      collapsed: true
+      input:
+        is_away:
+          name: Is away
+          description: When ON, the window will not open automatically.
+          selector:
+            boolean: {}
+
+mode: restart
+
+triggers:
+  - id: open
+    trigger: numeric_state
+    entity_id: !input co2_sensor
+    for: !input trigger_delay
+    above: !input open_threshold
+  - id: close
+    trigger: numeric_state
+    entity_id: !input co2_sensor
+    for: !input trigger_delay
+    below: !input close_threshold
+  - id: unavailable
+    trigger: state
+    entity_id: !input co2_sensor
+    to: "unavailable"
+    for: !input trigger_delay
+  - id: timer_started
+    trigger: timer.started
+    target: !input timer_entity
+  - id: timer_expired
+    trigger: timer.finished
+    target: !input timer_entity
+  - id: window_closed
+    trigger: state
+    entity_id: !input window_cover
+    to: "closed"
+
+actions:
+  - choose:
+      # 1) CO2 high → open window (unless away or timer running)
+      - conditions:
+          - condition: trigger
+            id: ["open"]
+          - condition: state
+            entity_id: !input timer_entity
+            state: "idle"
+          - condition: state
+            entity_id: !input is_away
+            state: "off"
+        sequence:
+          - action: cover.open_cover
+            target: !input window_cover
+
+      # 2) CO2 low → close window
+      - conditions:
+          - condition: trigger
+            id: ["close"]
+          - condition: state
+            entity_id: !input window_cover
+            state: "open"
+        sequence:
+          - action: cover.close_cover
+            target: !input window_cover
+
+      # 3) Sensor unavailable → close window for safety
+      - conditions:
+          - condition: trigger
+            id: ["unavailable"]
+          - condition: state
+            entity_id: !input window_cover
+            state: "open"
+        sequence:
+          - action: cover.close_cover
+            target: !input window_cover
+
+      # 4) Forced ventilation timer started → open window
+      - conditions:
+          - condition: trigger
+            id: ["timer_started"]
+        sequence:
+          - action: cover.open_cover
+            target: !input window_cover
+
+      # 5) Forced ventilation timer expired → close window
+      - conditions:
+          - condition: trigger
+            id: ["timer_expired"]
+          - condition: state
+            entity_id: !input window_cover
+            state: "open"
+        sequence:
+          - action: cover.close_cover
+            target: !input window_cover
+
+      # 6) Manual window close → cancel timer if running
+      - conditions:
+          - condition: trigger
+            id: ["window_closed"]
+          - condition: not
+            conditions:
+              - condition: state
+                entity_id: !input timer_entity
+                state: "idle"
+        sequence:
+          - action: timer.cancel
+            target: !input timer_entity
